@@ -2,7 +2,19 @@ import React from 'react';
 import { useAttendance } from '../../context/AttendanceContext';
 
 const DailyLogger = () => {
-  const { timetable, records, markAttendance } = useAttendance();
+  const { timetable, records, markAttendance, isLoadingTimetable } = useAttendance();
+
+  if (isLoadingTimetable) {
+    return (
+      <div className="bg-white p-6 rounded-lg shadow-md flex justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
+
+  if (!timetable || Object.keys(timetable).length === 0) {
+    return null; // Don't show logger if they haven't uploaded a timetable
+  }
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">

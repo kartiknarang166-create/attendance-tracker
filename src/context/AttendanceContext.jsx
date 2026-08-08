@@ -3,49 +3,80 @@ import { supabase } from '../supabaseClient';
 
 const AttendanceContext = createContext();
 
-// We accept the session directly from App.jsx!
 export const AttendanceProvider = ({ children, session }) => {
-  const [timetable, setTimetable] = useState({
-    Monday: ['Engineering Science', 'C Programming Lab'],
-    Tuesday: ['Mathematics', 'Communication Skills'],
-    Wednesday: ['Engineering Science', 'Physics'],
-    Thursday: ['C Programming', 'Mathematics'],
-    Friday: ['Physics Lab', 'Communication Skills']
-  });
-
+  const [timetable, setTimetable] = useState(null);
   const [records, setRecords] = useState({});
+  const [isLoadingTimetable, setIsLoadingTimetable] = useState(true);
   
-  // Instantly lock in the user ID
   const userId = session?.user?.id;
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setIsLoadingTimetable(false);
+      return;
+    }
 
-    const fetchAttendance = async () => {
-      const { data, error } = await supabase
+    const fetchData = async () => {
+      // 1. Fetch Attendance Records
+      const { data: recordsData, error: recordsError } = await supabase
         .from('attendance_records')
         .select('*')
         .order('created_at', { ascending: true });
 
-      if (error) {
-        console.error("Error fetching data:", error);
-      } else if (data) {
+      if (recordsError) {
+        console.error("Error fetching records:", recordsError);
+      } else if (recordsData) {
         const loadedRecords = {};
-        data.forEach(row => {
+        recordsData.forEach(row => {
           loadedRecords[`${row.day}-${row.subject}`] = row.status;
         });
         setRecords(loadedRecords);
       }
+
+      // 2. Fetch User Timetable
+      const { data: timetableData, error: timetableError } = await supabase
+        .from('timetables')
+        .select('schedule')
+        .eq('user_id', userId)
+        .single();
+
+      if (timetableError && timetableError.code !== 'PGRST116') {
+        // PGRST116 is "Results contain 0 rows" which is fine for new users
+        console.error("Error fetching timetable:", timetableError);
+      } else if (timetableData && timetableData.schedule) {
+        setTimetable(timetableData.schedule);
+      }
+      
+      setIsLoadingTimetable(false);
     };
 
-    fetchAttendance();
+    fetchData();
   }, [userId]);
 
-  const markAttendance = async (day, subject, status) => {
-    if (!userId) {
-      console.error("FAILED: No user ID found!");
-      return;
+  const updateTimetable = async (newTimetable) => {
+    if (!userId) return;
+    
+    // Update local UI immediately
+    setTimetable(newTimetable);
+
+    // Save to Supabase (upsert based on user_id)
+    const { error } = await supabase
+      .from('timetables')
+      .upsert([
+        { 
+          user_id: userId, 
+          schedule: newTimetable 
+        }
+      ], { onConflict: 'user_id' });
+
+    if (error) {
+      console.error("Error saving timetable to Supabase:", error);
+      throw new Error(`Failed to save to database: ${error.message || 'Check your Supabase logs.'}`);
     }
+  };
+
+  const markAttendance = async (day, subject, status) => {
+    if (!userId) return;
 
     setRecords(prev => ({
       ...prev,
@@ -65,13 +96,11 @@ export const AttendanceProvider = ({ children, session }) => {
 
     if (error) {
       console.error("Error saving to Supabase:", error);
-    } else {
-      console.log("Success! Data saved to Supabase.");
     }
   };
 
   return (
-    <AttendanceContext.Provider value={{ timetable, setTimetable, records, markAttendance }}>
+    <AttendanceContext.Provider value={{ timetable, updateTimetable, records, markAttendance, isLoadingTimetable }}>
       {children}
     </AttendanceContext.Provider>
   );

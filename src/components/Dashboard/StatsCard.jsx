@@ -3,8 +3,8 @@ import { useAttendance } from '../../context/AttendanceContext';
 import { calculateStats } from '../../utils/attendanceCalculations';
 
 const StatsCard = () => {
-  const { records } = useAttendance();
-  const { percentage, attended, missed } = calculateStats(records);
+  const { records, timetable } = useAttendance();
+  const { percentage, attended, missed } = calculateStats(records, timetable);
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md mb-8">
