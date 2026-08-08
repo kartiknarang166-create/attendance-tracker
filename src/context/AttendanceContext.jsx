@@ -1,9 +1,10 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { supabase } from '../supabaseClient'; // Importing your secure database connection
+import { supabase } from '../supabaseClient';
 
 const AttendanceContext = createContext();
 
-export const AttendanceProvider = ({ children }) => {
+// We accept the session directly from App.jsx!
+export const AttendanceProvider = ({ children, session }) => {
   const [timetable, setTimetable] = useState({
     Monday: ['Engineering Science', 'C Programming Lab'],
     Tuesday: ['Mathematics', 'Communication Skills'],
@@ -13,20 +14,22 @@ export const AttendanceProvider = ({ children }) => {
   });
 
   const [records, setRecords] = useState({});
+  
+  // Instantly lock in the user ID
+  const userId = session?.user?.id;
 
-  // 1. Fetch data from Supabase when the website first loads
   useEffect(() => {
+    if (!userId) return;
+
     const fetchAttendance = async () => {
-      // Grab all records, ordered by time created so the newest clicks override older ones
       const { data, error } = await supabase
         .from('attendance_records')
         .select('*')
         .order('created_at', { ascending: true });
 
       if (error) {
-        console.error("Error fetching data from Supabase:", error);
+        console.error("Error fetching data:", error);
       } else if (data) {
-        // Convert the SQL database rows back into the JS object format the UI needs
         const loadedRecords = {};
         data.forEach(row => {
           loadedRecords[`${row.day}-${row.subject}`] = row.status;
@@ -36,25 +39,34 @@ export const AttendanceProvider = ({ children }) => {
     };
 
     fetchAttendance();
-  }, []);
+  }, [userId]);
 
-  // 2. Push data to Supabase when you click a button
   const markAttendance = async (day, subject, status) => {
-    // Instantly update the UI so it feels lightning fast to the user
+    if (!userId) {
+      console.error("FAILED: No user ID found!");
+      return;
+    }
+
     setRecords(prev => ({
       ...prev,
       [`${day}-${subject}`]: status
     }));
 
-    // Send the record to the cloud database
     const { error } = await supabase
       .from('attendance_records')
       .insert([
-        { day: day, subject: subject, status: status }
+        { 
+          user_id: userId, 
+          day: day, 
+          subject: subject, 
+          status: status 
+        }
       ]);
 
     if (error) {
       console.error("Error saving to Supabase:", error);
+    } else {
+      console.log("Success! Data saved to Supabase.");
     }
   };
 
