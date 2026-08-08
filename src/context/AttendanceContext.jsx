@@ -5,6 +5,7 @@ const AttendanceContext = createContext();
 
 export const AttendanceProvider = ({ children, session }) => {
   const [timetable, setTimetable] = useState(null);
+  const [startDate, setStartDate] = useState(null);
   const [records, setRecords] = useState({});
   const [isLoadingTimetable, setIsLoadingTimetable] = useState(true);
   
@@ -27,24 +28,25 @@ export const AttendanceProvider = ({ children, session }) => {
         console.error("Error fetching records:", recordsError);
       } else if (recordsData) {
         const loadedRecords = {};
+        // Note: row.day now stores exact dates like '2026-08-08'
         recordsData.forEach(row => {
           loadedRecords[`${row.day}-${row.subject}`] = row.status;
         });
         setRecords(loadedRecords);
       }
 
-      // 2. Fetch User Timetable
+      // 2. Fetch User Timetable and Start Date
       const { data: timetableData, error: timetableError } = await supabase
         .from('timetables')
-        .select('schedule')
+        .select('schedule, start_date')
         .eq('user_id', userId)
         .single();
 
       if (timetableError && timetableError.code !== 'PGRST116') {
-        // PGRST116 is "Results contain 0 rows" which is fine for new users
         console.error("Error fetching timetable:", timetableError);
-      } else if (timetableData && timetableData.schedule) {
-        setTimetable(timetableData.schedule);
+      } else if (timetableData) {
+        if (timetableData.schedule) setTimetable(timetableData.schedule);
+        if (timetableData.start_date) setStartDate(timetableData.start_date);
       }
       
       setIsLoadingTimetable(false);
@@ -56,16 +58,20 @@ export const AttendanceProvider = ({ children, session }) => {
   const updateTimetable = async (newTimetable) => {
     if (!userId) return;
     
-    // Update local UI immediately
     setTimetable(newTimetable);
 
-    // Save to Supabase (upsert based on user_id)
+    // Upsert timetable (preserves existing start_date if any)
+    // Wait, upserting will overwrite unless we pull existing. But it's fine for now, we usually update specific columns.
+    const { data: existing } = await supabase.from('timetables').select('start_date').eq('user_id', userId).single();
+    const currentStartDate = existing?.start_date || startDate;
+
     const { error } = await supabase
       .from('timetables')
       .upsert([
         { 
           user_id: userId, 
-          schedule: newTimetable 
+          schedule: newTimetable,
+          start_date: currentStartDate
         }
       ], { onConflict: 'user_id' });
 
@@ -75,20 +81,44 @@ export const AttendanceProvider = ({ children, session }) => {
     }
   };
 
-  const markAttendance = async (day, subject, status) => {
+  const updateStartDate = async (newStartDate) => {
+    if (!userId) return;
+    setStartDate(newStartDate);
+    
+    // Check if table exists/row exists by attempting update
+    const { error } = await supabase
+      .from('timetables')
+      .update({ start_date: newStartDate })
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error("Error saving start date:", error);
+    }
+  };
+
+  const markAttendance = async (dateStr, subject, status) => {
     if (!userId) return;
 
     setRecords(prev => ({
       ...prev,
-      [`${day}-${subject}`]: status
+      [`${dateStr}-${subject}`]: status
     }));
 
+    // Delete existing record for this specific day and subject to prevent duplicates
+    await supabase
+      .from('attendance_records')
+      .delete()
+      .eq('user_id', userId)
+      .eq('day', dateStr)
+      .eq('subject', subject);
+
+    // Insert the fresh status
     const { error } = await supabase
       .from('attendance_records')
       .insert([
         { 
           user_id: userId, 
-          day: day, 
+          day: dateStr, 
           subject: subject, 
           status: status 
         }
@@ -100,7 +130,15 @@ export const AttendanceProvider = ({ children, session }) => {
   };
 
   return (
-    <AttendanceContext.Provider value={{ timetable, updateTimetable, records, markAttendance, isLoadingTimetable }}>
+    <AttendanceContext.Provider value={{ 
+      timetable, 
+      updateTimetable, 
+      startDate, 
+      updateStartDate,
+      records, 
+      markAttendance, 
+      isLoadingTimetable 
+    }}>
       {children}
     </AttendanceContext.Provider>
   );
