@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useAttendance } from '../../context/AttendanceContext';
 import { extractTimetableFromImage } from '../../utils/aiAgent';
 
-const TimetableUpload = () => {
-  const { updateTimetable } = useAttendance(); 
+const TimetableUpload = ({ variant = 'full' }) => {
+  const { updateTimetable, timetable } = useAttendance(); 
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
 
@@ -36,6 +36,33 @@ const TimetableUpload = () => {
     }
   };
 
+  if (variant === 'minimal') {
+    return (
+      <div className="relative flex items-center">
+        <input 
+          type="file" 
+          accept="image/*,application/pdf"
+          onChange={handleFileUpload}
+          disabled={isProcessing}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
+          title="Upload new screenshot or PDF"
+        />
+        <div className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${isProcessing ? 'bg-indigo-100 text-indigo-400' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200'}`}>
+          {isProcessing ? (
+            <span className="flex items-center gap-1">
+              <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              Updating...
+            </span>
+          ) : 'New Timetable'}
+        </div>
+      </div>
+    );
+  }
+
+  if (variant === 'full' && timetable && Object.keys(timetable).length > 0) {
+    return null; // Hide the full uploader if a timetable already exists
+  }
+
   return (
     <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 mb-8 text-center relative overflow-hidden">
       
@@ -57,7 +84,7 @@ const TimetableUpload = () => {
 
       <h3 className="text-xl font-bold text-gray-900 mb-2">Upload Timetable</h3>
       <p className="text-gray-500 mb-6 text-sm max-w-sm mx-auto">
-        Upload a screenshot of your college timetable. Our AI will automatically extract your classes and build your dashboard.
+        Upload a screenshot or PDF of your college timetable. Our AI will automatically extract your classes and build your dashboard.
       </p>
 
       {error && (
@@ -69,14 +96,14 @@ const TimetableUpload = () => {
       <div className="relative group cursor-pointer inline-block">
         <input 
           type="file" 
-          accept="image/*"
+          accept="image/*,application/pdf"
           onChange={handleFileUpload}
           disabled={isProcessing}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-          title="Upload screenshot"
+          title="Upload screenshot or PDF"
         />
         <div className="px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-xl transition-all shadow-md shadow-indigo-200 group-hover:shadow-lg group-hover:shadow-indigo-300">
-          Select Screenshot
+          Select File
         </div>
       </div>
     </div>

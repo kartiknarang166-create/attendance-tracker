@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAttendance } from '../../context/AttendanceContext';
+import TimetableUpload from '../Timetable/TimetableUpload';
 
 const getDayName = (date) => {
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -63,6 +64,9 @@ const DailyLogger = () => {
             onChange={(e) => updateStartDate(e.target.value)}
             className="border-b border-gray-300 bg-transparent px-1 py-0.5 text-gray-800 focus:outline-none focus:border-indigo-500 transition-colors"
           />
+          <div className="pl-2 border-l border-gray-200">
+            <TimetableUpload variant="minimal" />
+          </div>
         </div>
       </div>
       
