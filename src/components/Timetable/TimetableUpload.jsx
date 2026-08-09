@@ -36,6 +36,7 @@ const TimetableUpload = ({ variant = 'full' }) => {
     }
   };
 
+  /* ── Minimal Variant: Small pill button ────────── */
   if (variant === 'minimal') {
     return (
       <div className="relative flex items-center">
@@ -47,52 +48,84 @@ const TimetableUpload = ({ variant = 'full' }) => {
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-10"
           title="Upload new screenshot or PDF"
         />
-        <div className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${isProcessing ? 'bg-indigo-100 text-indigo-400' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200'}`}>
+        <div className={`btn-pill ${isProcessing ? 'btn-yellow' : 'btn-blue'}`} style={{ fontSize: '0.75rem', padding: '0.35rem 0.85rem' }}>
           {isProcessing ? (
-            <span className="flex items-center gap-1">
-              <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <span className="flex items-center gap-1.5">
+              <div className="spinner-notebook" style={{ width: 14, height: 14, borderWidth: 2.5 }}></div>
               Updating...
             </span>
-          ) : 'New Timetable'}
+          ) : '📤 New Timetable'}
         </div>
       </div>
     );
   }
 
+  /* ── Hide full uploader if timetable exists ────── */
   if (variant === 'full' && timetable && Object.keys(timetable).length > 0) {
-    return null; // Hide the full uploader if a timetable already exists
+    return null;
   }
 
+  /* ── Full Variant: Big upload card ─────────────── */
   return (
-    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 mb-8 text-center relative overflow-hidden">
+    <div className="card-notebook mb-8 text-center relative overflow-hidden animate-pop-in">
       
+      {/* Processing Overlay */}
       {isProcessing && (
-        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center z-10">
-          <svg className="animate-spin h-10 w-10 text-indigo-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <p className="text-indigo-600 font-semibold animate-pulse">AI is extracting your timetable...</p>
+        <div 
+          className="absolute inset-0 flex flex-col items-center justify-center z-10"
+          style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(4px)' }}
+        >
+          <div className="spinner-notebook mb-4" style={{ width: 48, height: 48, borderWidth: 5 }}></div>
+          <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--blue)', fontSize: '1.1rem' }} className="animate-pulse">
+            🤖 AI is extracting your timetable...
+          </p>
         </div>
       )}
 
-      <div className="mx-auto w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
+      {/* Icon */}
+      <div className="animate-float inline-block mb-4">
+        <div 
+          className="mx-auto flex items-center justify-center"
+          style={{ 
+            width: 72, height: 72, 
+            background: 'var(--yellow)', 
+            border: '3px solid var(--border)', 
+            borderRadius: '50%',
+            fontSize: '2rem'
+          }}
+        >
+          📸
+        </div>
       </div>
 
-      <h3 className="text-xl font-bold text-gray-900 mb-2">Upload Timetable</h3>
-      <p className="text-gray-500 mb-6 text-sm max-w-sm mx-auto">
-        Upload a screenshot or PDF of your college timetable. Our AI will automatically extract your classes and build your dashboard.
+      <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.4rem', color: '#1E293B', marginBottom: '0.5rem' }}>
+        Upload Timetable
+      </h3>
+      <p style={{ color: '#64748B', fontWeight: 600, fontSize: '0.9rem', maxWidth: '360px', margin: '0 auto 1.5rem' }}>
+        Upload a screenshot or PDF of your college timetable. Our AI will automatically extract your classes!
       </p>
 
+      {/* Error */}
       {error && (
-        <div className="mb-6 p-3 bg-red-50 text-red-600 text-sm font-medium rounded-lg border border-red-100">
-          {error}
+        <div 
+          className="mb-5 animate-pop-in"
+          style={{ 
+            padding: '0.75rem 1rem',
+            borderRadius: '12px',
+            border: '2.5px solid var(--border)',
+            background: '#FEE2E2',
+            color: 'var(--red-dark)',
+            fontWeight: 700,
+            fontSize: '0.85rem',
+            fontFamily: 'var(--font-heading)',
+            textAlign: 'left'
+          }}
+        >
+          ⚠️ {error}
         </div>
       )}
 
+      {/* Upload Button */}
       <div className="relative group cursor-pointer inline-block">
         <input 
           type="file" 
@@ -102,8 +135,8 @@ const TimetableUpload = ({ variant = 'full' }) => {
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
           title="Upload screenshot or PDF"
         />
-        <div className="px-6 py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-xl transition-all shadow-md shadow-indigo-200 group-hover:shadow-lg group-hover:shadow-indigo-300">
-          Select File
+        <div className="btn-pill btn-blue" style={{ padding: '0.7rem 1.75rem', fontSize: '1rem' }}>
+          📁 Select File
         </div>
       </div>
     </div>

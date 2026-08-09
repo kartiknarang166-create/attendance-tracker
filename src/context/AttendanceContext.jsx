@@ -8,7 +8,7 @@ export const AttendanceProvider = ({ children, session }) => {
   const [startDate, setStartDate] = useState(null);
   const [records, setRecords] = useState({});
   const [isLoadingTimetable, setIsLoadingTimetable] = useState(true);
-  
+
   const userId = session?.user?.id;
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export const AttendanceProvider = ({ children, session }) => {
         if (timetableData.schedule) setTimetable(timetableData.schedule);
         if (timetableData.start_date) setStartDate(timetableData.start_date);
       }
-      
+
       setIsLoadingTimetable(false);
     };
 
@@ -57,7 +57,7 @@ export const AttendanceProvider = ({ children, session }) => {
 
   const updateTimetable = async (newTimetable) => {
     if (!userId) return;
-    
+
     setTimetable(newTimetable);
 
     // Upsert timetable (preserves existing start_date if any)
@@ -68,8 +68,8 @@ export const AttendanceProvider = ({ children, session }) => {
     const { error } = await supabase
       .from('timetables')
       .upsert([
-        { 
-          user_id: userId, 
+        {
+          user_id: userId,
           schedule: newTimetable,
           start_date: currentStartDate
         }
@@ -84,7 +84,7 @@ export const AttendanceProvider = ({ children, session }) => {
   const updateStartDate = async (newStartDate) => {
     if (!userId) return;
     setStartDate(newStartDate);
-    
+
     // Check if table exists/row exists by attempting update
     const { error } = await supabase
       .from('timetables')
@@ -116,11 +116,11 @@ export const AttendanceProvider = ({ children, session }) => {
     const { error } = await supabase
       .from('attendance_records')
       .insert([
-        { 
-          user_id: userId, 
-          day: dateStr, 
-          subject: subject, 
-          status: status 
+        {
+          user_id: userId,
+          day: dateStr,
+          subject: subject,
+          status: status
         }
       ]);
 
@@ -130,14 +130,14 @@ export const AttendanceProvider = ({ children, session }) => {
   };
 
   return (
-    <AttendanceContext.Provider value={{ 
-      timetable, 
-      updateTimetable, 
-      startDate, 
+    <AttendanceContext.Provider value={{
+      timetable,
+      updateTimetable,
+      startDate,
       updateStartDate,
-      records, 
-      markAttendance, 
-      isLoadingTimetable 
+      records,
+      markAttendance,
+      isLoadingTimetable
     }}>
       {children}
     </AttendanceContext.Provider>

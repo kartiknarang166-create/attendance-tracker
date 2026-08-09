@@ -1,1 +1,350 @@
 @import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════
+   NOTEBOOK-STYLE DESIGN SYSTEM
+   Colorful, bold, cartoon aesthetic with thick borders
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  --blue: #3B82F6;
+  --blue-dark: #2563EB;
+  --yellow: #FACC15;
+  --yellow-bg: #FEF9C3;
+  --pink: #EC4899;
+  --pink-bg: #FCE7F3;
+  --green: #22C55E;
+  --green-dark: #16A34A;
+  --red: #EF4444;
+  --red-dark: #DC2626;
+  --border: #1E293B;
+  --bg-grid: #F1F5F9;
+  --font-heading: 'Fredoka', sans-serif;
+  --font-body: 'Nunito', sans-serif;
+}
+
+/* ── Base ───────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background-color: var(--bg-grid);
+  background-image:
+    linear-gradient(rgba(203, 213, 225, 0.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(203, 213, 225, 0.4) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: #1E293B;
+  min-height: 100vh;
+}
+
+/* ── Animations ─────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(0.85); }
+  60%  { transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25%  { transform: rotate(-3deg); }
+  75%  { transform: rotate(3deg); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+  50%      { box-shadow: 0 0 20px 4px rgba(59, 130, 246, 0.15); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes streakBounce {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.1); }
+}
+
+.animate-fade-in-up  { animation: fadeInUp 0.5s ease-out both; }
+.animate-pop-in      { animation: popIn 0.4s ease-out both; }
+.animate-slide-left  { animation: slideInLeft 0.4s ease-out both; }
+.animate-wiggle      { animation: wiggle 0.6s ease-in-out; }
+.animate-float       { animation: float 3s ease-in-out infinite; }
+.animate-pulse-glow  { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-streak      { animation: streakBounce 1s ease-in-out infinite; }
+
+/* Staggered delays */
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+.delay-5 { animation-delay: 0.5s; }
+
+/* ── Card System ────────────────────────────── */
+.card-notebook {
+  background: white;
+  border: 3px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-notebook:hover {
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0 var(--border);
+}
+
+.card-blue {
+  background: var(--blue);
+  border: 3px solid var(--border);
+  border-radius: 16px;
+  color: white;
+}
+.card-yellow {
+  background: var(--yellow);
+  border: 3px solid var(--border);
+  border-radius: 16px;
+  color: var(--border);
+}
+.card-pink {
+  background: var(--pink);
+  border: 3px solid var(--border);
+  border-radius: 16px;
+  color: white;
+}
+
+/* ── Pill Buttons ───────────────────────────── */
+.btn-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 3px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.btn-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 3px 3px 0 var(--border);
+}
+.btn-pill:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.btn-blue   { background: var(--blue); color: white; }
+.btn-green  { background: var(--green); color: white; }
+.btn-red    { background: var(--red); color: white; }
+.btn-yellow { background: var(--yellow); color: var(--border); }
+.btn-white  { background: white; color: var(--border); }
+.btn-pink   { background: var(--pink); color: white; }
+
+/* ── Toggle Switch ──────────────────────────── */
+.toggle-group {
+  display: flex;
+  gap: 0.5rem;
+}
+.toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.8rem;
+  border: 2.5px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: white;
+  color: #64748B;
+}
+.toggle-btn:hover {
+  transform: scale(1.03);
+}
+.toggle-btn.active-green {
+  background: var(--green);
+  color: white;
+  box-shadow: 3px 3px 0 var(--border);
+}
+.toggle-btn.active-red {
+  background: var(--red);
+  color: white;
+  box-shadow: 3px 3px 0 var(--border);
+}
+
+/* ── Title Text Effect ──────────────────────── */
+.title-shadow {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--border);
+  text-shadow:
+    3px 3px 0 var(--blue),
+    -1px -1px 0 white;
+}
+
+/* ── Timeline ───────────────────────────────── */
+.timeline-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--pink);
+  border: 3px solid var(--border);
+  flex-shrink: 0;
+}
+.timeline-line {
+  width: 3px;
+  background: var(--border);
+  flex-shrink: 0;
+  min-height: 20px;
+  margin-left: 5.5px;
+}
+
+/* ── Date Navigator ─────────────────────────── */
+.date-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.date-badge {
+  background: var(--yellow);
+  border: 3px solid var(--border);
+  border-radius: 16px;
+  padding: 0.75rem 1.25rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.3;
+}
+.nav-arrow {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--blue);
+  border: 3px solid var(--border);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.nav-arrow:hover {
+  transform: scale(1.1);
+  box-shadow: 3px 3px 0 var(--border);
+}
+.nav-arrow:active {
+  transform: scale(0.95);
+}
+
+/* ── Subject Card ───────────────────────────── */
+.subject-card {
+  background: white;
+  border: 3px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: all 0.2s ease;
+}
+.subject-card:hover {
+  box-shadow: 4px 4px 0 var(--border);
+  transform: translateY(-1px);
+}
+
+/* ── Streak Badge ───────────────────────────── */
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: linear-gradient(135deg, #FF6B35, #F72585);
+  border: 3px solid var(--border);
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+  color: white;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* ── Auth Card ──────────────────────────────── */
+.auth-card {
+  background: white;
+  border: 4px solid var(--border);
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 8px 8px 0 var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--blue), var(--yellow), var(--pink), var(--green));
+}
+
+/* ── Input Notebook Style ───────────────────── */
+.input-notebook {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2.5px solid var(--border);
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: #F8FAFC;
+  color: var(--border);
+  transition: all 0.2s ease;
+  outline: none;
+}
+.input-notebook:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  background: white;
+}
+.input-notebook::placeholder {
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+/* ── Spinner ────────────────────────────────── */
+.spinner-notebook {
+  width: 32px;
+  height: 32px;
+  border: 4px solid var(--yellow);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 640px) {
+  .card-notebook { padding: 1rem; }
+  .auth-card { padding: 1.5rem; }
+  .subject-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

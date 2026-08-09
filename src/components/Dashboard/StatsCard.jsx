@@ -7,21 +7,42 @@ const StatsCard = () => {
   const { percentage, attended, missed } = calculateStats(records, timetable, startDate);
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-      <h2 className="text-xl font-bold mb-4">Current Attendance</h2>
-      <div className="grid grid-cols-3 gap-4 text-center">
-        <div className="bg-blue-50 p-4 rounded">
-          <p className="text-sm text-gray-500">Percentage</p>
-          <p className="text-3xl font-bold text-blue-600">{percentage}%</p>
+    <div className="mb-8 animate-fade-in-up">
+      <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.35rem', marginBottom: '1rem', color: '#1E293B' }}>
+        Current Attendance
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        
+        {/* Percentage — Blue */}
+        <div className="card-blue p-5 text-center animate-pop-in delay-1">
+          <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 500, fontSize: '0.85rem', opacity: 0.85 }}>
+            Overall Percentage:
+          </p>
+          <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '3rem', lineHeight: 1.1 }}>
+            {percentage}%
+          </p>
         </div>
-        <div className="bg-green-50 p-4 rounded">
-          <p className="text-sm text-gray-500">Classes Attended</p>
-          <p className="text-3xl font-bold text-green-600">{attended}</p>
+
+        {/* Attended — Yellow */}
+        <div className="card-yellow p-5 text-center animate-pop-in delay-2">
+          <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 500, fontSize: '0.85rem', opacity: 0.7 }}>
+            Classes Attended:
+          </p>
+          <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '3rem', lineHeight: 1.1 }}>
+            {attended}
+          </p>
         </div>
-        <div className="bg-red-50 p-4 rounded">
-          <p className="text-sm text-gray-500">Classes Missed</p>
-          <p className="text-3xl font-bold text-red-600">{missed}</p>
+
+        {/* Missed — Pink */}
+        <div className="card-pink p-5 text-center animate-pop-in delay-3">
+          <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 500, fontSize: '0.85rem', opacity: 0.85 }}>
+            Classes Missed:
+          </p>
+          <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '3rem', lineHeight: 1.1 }}>
+            {missed}
+          </p>
         </div>
+
       </div>
     </div>
   );

@@ -8,7 +8,6 @@ const getDayName = (date) => {
 };
 
 const formatDateForInput = (date) => {
-  // Ensure we get the local date correctly formatted as YYYY-MM-DD
   const offset = date.getTimezoneOffset();
   const adjustedDate = new Date(date.getTime() - (offset*60*1000));
   return adjustedDate.toISOString().split('T')[0];
@@ -19,8 +18,6 @@ const getValidWeekday = (date, direction = 0) => {
   if (direction !== 0) {
     newDate.setDate(newDate.getDate() + direction);
   }
-  
-  // Skip weekends (0 is Sunday, 6 is Saturday)
   while (newDate.getDay() === 0 || newDate.getDay() === 6) {
     newDate.setDate(newDate.getDate() + (direction >= 0 ? 1 : -1));
   }
@@ -34,8 +31,8 @@ const DailyLogger = () => {
 
   if (isLoadingTimetable) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+      <div className="card-notebook flex justify-center py-12">
+        <div className="spinner-notebook"></div>
       </div>
     );
   }
@@ -51,64 +48,129 @@ const DailyLogger = () => {
   const dateStr = formatDateForInput(currentDate);
   const subjectsToday = timetable[dayName] || [];
 
+  // Alternating border colors for subject cards
+  const borderColors = ['var(--blue)', 'var(--pink)', 'var(--yellow)', 'var(--green)', 'var(--blue)', 'var(--pink)'];
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <h2 className="text-xl font-bold">Daily Attendance</h2>
+    <div className="animate-fade-in-up delay-2">
+      {/* Section Header + Controls */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-3">
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.35rem', color: '#1E293B' }}>
+          Daily Schedule
+        </h2>
         
-        <div className="flex items-center space-x-2 text-sm bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
-          <label className="text-gray-600 font-medium">Semester Start Date:</label>
-          <input 
-            type="date" 
-            value={startDate || ''}
-            onChange={(e) => updateStartDate(e.target.value)}
-            className="border-b border-gray-300 bg-transparent px-1 py-0.5 text-gray-800 focus:outline-none focus:border-indigo-500 transition-colors"
-          />
-          <div className="pl-2 border-l border-gray-200">
-            <TimetableUpload variant="minimal" />
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Semester Start Date */}
+          <div 
+            className="flex items-center gap-2"
+            style={{ 
+              background: 'var(--yellow-bg)',
+              border: '2.5px solid var(--border)',
+              borderRadius: '999px',
+              padding: '0.35rem 0.85rem',
+              fontSize: '0.8rem',
+              fontFamily: 'var(--font-heading)',
+              fontWeight: 600
+            }}
+          >
+            <span>📅</span>
+            <input 
+              type="date" 
+              value={startDate || ''}
+              onChange={(e) => updateStartDate(e.target.value)}
+              style={{ 
+                border: 'none', 
+                background: 'transparent', 
+                fontFamily: 'var(--font-heading)',
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                color: '#1E293B',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            />
+          </div>
+
+          {/* New Timetable Button */}
+          <TimetableUpload variant="minimal" />
+        </div>
+      </div>
+      
+      {/* Date Navigator */}
+      <div className="flex items-center gap-4 mb-6">
+        <button onClick={handlePrevDay} className="nav-arrow">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+
+        <div className="date-badge flex-1">
+          <div style={{ fontSize: '1.15rem' }}>{dayName},</div>
+          <div style={{ fontSize: '0.95rem' }}>
+            {currentDate.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
           </div>
         </div>
-      </div>
-      
-      <div className="flex items-center justify-between bg-indigo-50 p-4 rounded-xl mb-6">
-        <button onClick={handlePrevDay} className="p-2 bg-white rounded-full shadow hover:bg-gray-50 transition active:scale-95">
-          <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
-        </button>
-        
-        <div className="text-center">
-          <h3 className="font-bold text-lg text-indigo-900">{dayName}</h3>
-          <p className="text-sm text-indigo-600 font-medium">{currentDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-        </div>
 
-        <button onClick={handleNextDay} className="p-2 bg-white rounded-full shadow hover:bg-gray-50 transition active:scale-95">
-          <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+        <button onClick={handleNextDay} className="nav-arrow">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"></path></svg>
         </button>
       </div>
       
-      <div className="space-y-4">
+      {/* Class List — Timeline Style */}
+      <div className="space-y-0">
         {subjectsToday.length === 0 ? (
-          <p className="text-center text-gray-500 py-8 bg-gray-50 rounded-lg border border-dashed border-gray-200">No classes scheduled for {dayName}. Enjoy your day!</p>
+          <div 
+            className="text-center py-10 animate-pop-in" 
+            style={{ 
+              background: 'var(--yellow-bg)', 
+              border: '3px dashed var(--border)', 
+              borderRadius: '16px',
+              fontFamily: 'var(--font-heading)',
+              fontWeight: 600,
+              color: '#64748B'
+            }}
+          >
+            <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.5rem' }}>🏖️</span>
+            No classes scheduled for {dayName}. Enjoy your day!
+          </div>
         ) : (
           subjectsToday.map((subject, index) => {
-            const recordKey = `${dateStr}-${subject}`;
+            const recordKey = `${dateStr}-${subject}__${index}`;
             const currentStatus = records[recordKey];
+            const borderColor = borderColors[index % borderColors.length];
 
             return (
-              <div key={index} className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-gray-50 p-4 rounded-lg border border-gray-100 gap-3">
-                <span className="font-semibold text-gray-800">{subject}</span>
-                <div className="flex space-x-2">
-                  <button 
-                    onClick={() => markAttendance(dateStr, subject, 'attended')}
-                    className={`flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold transition-all ${currentStatus === 'attended' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20 ring-2 ring-emerald-500 ring-offset-1' : 'bg-white border border-gray-200 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200'}`}
-                  >
-                    Attended
-                  </button>
-                  <button 
-                    onClick={() => markAttendance(dateStr, subject, 'missed')}
-                    className={`flex-1 sm:flex-none px-5 py-2 rounded-lg text-sm font-semibold transition-all ${currentStatus === 'missed' ? 'bg-red-500 text-white shadow-md shadow-red-500/20 ring-2 ring-red-500 ring-offset-1' : 'bg-white border border-gray-200 text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200'}`}
-                  >
-                    Missed
-                  </button>
+              <div key={index} className="flex gap-3" style={{ animationDelay: `${index * 0.1}s` }}>
+                {/* Timeline */}
+                <div className="flex flex-col items-center pt-5">
+                  <div className="timeline-dot" style={{ background: borderColor }}></div>
+                  {index < subjectsToday.length - 1 && <div className="timeline-line flex-1"></div>}
+                </div>
+
+                {/* Subject Card */}
+                <div 
+                  className="subject-card flex-1 mb-3 animate-slide-left"
+                  style={{ borderColor: borderColor, animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span style={{ fontSize: '1.2rem' }}>📘</span>
+                    <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '0.95rem' }}>
+                      {subject}
+                    </span>
+                  </div>
+                  
+                  <div className="toggle-group">
+                    <button 
+                      onClick={() => markAttendance(dateStr, `${subject}__${index}`, 'attended')}
+                      className={`toggle-btn ${currentStatus === 'attended' ? 'active-green' : ''}`}
+                    >
+                      ✓ Attended
+                    </button>
+                    <button 
+                      onClick={() => markAttendance(dateStr, `${subject}__${index}`, 'missed')}
+                      className={`toggle-btn ${currentStatus === 'missed' ? 'active-red' : ''}`}
+                    >
+                      ✕ Missed
+                    </button>
+                  </div>
                 </div>
               </div>
             );
