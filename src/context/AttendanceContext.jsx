@@ -53,6 +53,34 @@ export const AttendanceProvider = ({ children, session }) => {
     };
 
     fetchData();
+
+    // Subscribe to real-time changes on the attendance_records table
+    const subscription = supabase
+      .channel('attendance_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'attendance_records', filter: `user_id=eq.${userId}` }, 
+        () => {
+          // Re-fetch only the records to stay perfectly in sync across tabs/devices
+          supabase
+            .from('attendance_records')
+            .select('*')
+            .order('created_at', { ascending: true })
+            .then(({ data }) => {
+              if (data) {
+                const loadedRecords = {};
+                data.forEach(row => {
+                  loadedRecords[`${row.day}-${row.subject}`] = row.status;
+                });
+                setRecords(loadedRecords);
+              }
+            });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, [userId]);
 
   const updateTimetable = async (newTimetable) => {
@@ -60,8 +88,18 @@ export const AttendanceProvider = ({ children, session }) => {
 
     setTimetable(newTimetable);
 
+    // Clear all old attendance records so the percentage resets to 0
+    setRecords({});
+    const { error: deleteError } = await supabase
+      .from('attendance_records')
+      .delete()
+      .eq('user_id', userId);
+
+    if (deleteError) {
+      console.error("Error clearing old attendance records:", deleteError);
+    }
+
     // Upsert timetable (preserves existing start_date if any)
-    // Wait, upserting will overwrite unless we pull existing. But it's fine for now, we usually update specific columns.
     const { data: existing } = await supabase.from('timetables').select('start_date').eq('user_id', userId).single();
     const currentStartDate = existing?.start_date || startDate;
 
@@ -99,33 +137,30 @@ export const AttendanceProvider = ({ children, session }) => {
   const markAttendance = async (dateStr, subject, status) => {
     if (!userId) return;
 
+    // Optimistic UI update
     setRecords(prev => ({
       ...prev,
       [`${dateStr}-${subject}`]: status
     }));
 
-    // Delete existing record for this specific day and subject to prevent duplicates
-    await supabase
+    // Try to update existing record first
+    const { data: updateData, error: updateError } = await supabase
       .from('attendance_records')
-      .delete()
+      .update({ status: status })
       .eq('user_id', userId)
       .eq('day', dateStr)
-      .eq('subject', subject);
+      .eq('subject', subject)
+      .select();
 
-    // Insert the fresh status
-    const { error } = await supabase
-      .from('attendance_records')
-      .insert([
-        {
-          user_id: userId,
-          day: dateStr,
-          subject: subject,
-          status: status
-        }
-      ]);
-
-    if (error) {
-      console.error("Error saving to Supabase:", error);
+    if (updateError) {
+      console.error("Error updating record:", updateError);
+    } else if (!updateData || updateData.length === 0) {
+      // If no row was updated, it doesn't exist yet, so we insert it
+      const { error: insertError } = await supabase
+        .from('attendance_records')
+        .insert([{ user_id: userId, day: dateStr, subject: subject, status: status }]);
+        
+      if (insertError) console.error("Error inserting record:", insertError);
     }
   };
 
