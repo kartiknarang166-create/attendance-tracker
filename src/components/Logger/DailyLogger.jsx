@@ -132,7 +132,12 @@ const DailyLogger = () => {
             No classes scheduled for {dayName}. Enjoy your day!
           </div>
         ) : (
-          subjectsToday.map((subject, index) => {
+          subjectsToday.map((item, index) => {
+            const isObject = typeof item === 'object';
+            const subject = isObject ? item.subject : item;
+            const time = isObject ? item.time : '';
+            const faculty = isObject ? item.faculty : '';
+
             const recordKey = `${dateStr}-${subject}__${index}`;
             const currentStatus = records[recordKey];
             const borderColor = borderColors[index % borderColors.length];
@@ -150,11 +155,19 @@ const DailyLogger = () => {
                   className="subject-card flex-1 mb-3 animate-slide-left"
                   style={{ borderColor: borderColor, animationDelay: `${index * 0.1}s` }}
                 >
-                  <div className="flex items-center gap-2">
-                    <span style={{ fontSize: '1.2rem' }}>📘</span>
-                    <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '0.95rem' }}>
-                      {subject}
-                    </span>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span style={{ fontSize: '1.2rem' }}>📘</span>
+                      <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '0.95rem', color: '#1E293B' }}>
+                        {subject}
+                      </span>
+                    </div>
+                    {(time || faculty) && (
+                      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1" style={{ paddingLeft: '1.7rem', fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '0.8rem', color: '#64748B' }}>
+                        {time && <span className="flex items-center gap-1">⏰ {time}</span>}
+                        {faculty && <span className="flex items-center gap-1">👨‍🏫 {faculty}</span>}
+                      </div>
+                    )}
                   </div>
                   
                   <div className="toggle-group">

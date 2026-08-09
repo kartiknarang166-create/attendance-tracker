@@ -3,8 +3,14 @@ export const calculateStats = (records, timetable, startDate) => {
 
   // Build a set of all valid subjects from the current timetable
   const validSubjects = new Set();
-  Object.values(timetable).forEach(subjects => {
-    subjects.forEach(subject => validSubjects.add(subject));
+  Object.values(timetable).forEach(classes => {
+    classes.forEach(item => {
+      if (typeof item === 'string') {
+        validSubjects.add(item);
+      } else if (item && typeof item === 'object' && item.subject) {
+        validSubjects.add(item.subject);
+      }
+    });
   });
 
   const relevantValues = [];

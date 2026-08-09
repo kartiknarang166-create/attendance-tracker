@@ -15,18 +15,24 @@ export const extractTimetableFromImage = async (base64Image, mimeType) => {
 
     const prompt = `
       You are an expert data extraction AI. I am providing you with an image of a student's college weekly timetable.
-      Your job is to extract the schedule and format it EXACTLY as a JSON object, where the keys are the days of the week (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday) and the values are arrays of strings representing the subject names in chronological order.
+      Your job is to extract the schedule and format it EXACTLY as a JSON object, where the keys are the days of the week (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday) and the values are arrays of objects representing the classes in chronological order.
       
       Rules:
       1. ONLY output valid JSON. Do not include markdown formatting like \`\`\`json or \`\`\`.
-      2. Ignore times, professor names, or room numbers. ONLY extract the subject/course name.
-      3. If a day has no classes, do not include it as a key, or set its value to an empty array.
-      4. If a class spans multiple slots, only list it once for that continuous block.
+      2. For each class, extract the "subject" (course name), "time" (class timing), and "faculty" (professor name).
+      3. If you cannot read the faculty name or timing, leave their values as an empty string "".
+      4. If a day has no classes, do not include it as a key, or set its value to an empty array.
+      5. If a class spans multiple slots, only list it once for that continuous block but combine the time.
       
       Example output format:
       {
-        "Monday": ["Engineering Science", "C Programming Lab"],
-        "Tuesday": ["Mathematics", "Communication Skills"]
+        "Monday": [
+          { "subject": "Engineering Science", "time": "9:00 AM - 10:30 AM", "faculty": "Dr. Smith" },
+          { "subject": "C Programming Lab", "time": "11:00 AM - 1:00 PM", "faculty": "" }
+        ],
+        "Tuesday": [
+          { "subject": "Mathematics", "time": "", "faculty": "Prof. Jones" }
+        ]
       }
     `;
 
