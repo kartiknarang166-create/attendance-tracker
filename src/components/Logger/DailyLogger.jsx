@@ -264,6 +264,13 @@ const DailyLogger = () => {
                     >
                       ✕ Missed
                     </button>
+                    <button 
+                      onClick={() => markAttendance(dateStr, `${subject}__${index}`, 'canceled')}
+                      disabled={isFutureDate}
+                      className={`toggle-btn ${currentStatus === 'canceled' ? 'active-orange' : ''} ${isFutureDate ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      ➖ Canceled
+                    </button>
                   </div>
                 </div>
               </div>

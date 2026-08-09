@@ -187,6 +187,11 @@ body {
   color: white;
   box-shadow: 3px 3px 0 var(--border);
 }
+.toggle-btn.active-orange {
+  background: #F97316;
+  color: white;
+  box-shadow: 3px 3px 0 var(--border);
+}
 
 /* ── Title Text Effect ──────────────────────── */
 .title-shadow {

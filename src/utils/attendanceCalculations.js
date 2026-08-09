@@ -32,11 +32,14 @@ export const calculateStats = (records, timetable, startDate) => {
     }
   });
 
-  const totalLogged = relevantValues.length;
+  // Filter out any classes marked as 'canceled' so they don't affect stats
+  const validRelevantValues = relevantValues.filter(status => status !== 'canceled');
+
+  const totalLogged = validRelevantValues.length;
   if (totalLogged === 0) return { percentage: 0, attended: 0, missed: 0, totalLogged: 0 };
 
-  const attended = relevantValues.filter(status => status === 'attended').length;
-  const missed = relevantValues.filter(status => status === 'missed').length;
+  const attended = validRelevantValues.filter(status => status === 'attended').length;
+  const missed = validRelevantValues.filter(status => status === 'missed').length;
   const percentage = Math.round((attended / totalLogged) * 100);
 
   return { percentage, attended, missed, totalLogged };
