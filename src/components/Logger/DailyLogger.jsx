@@ -292,6 +292,80 @@ const DailyLogger = () => {
         )}
       </div>
 
+      {/* ── Bulk Action Bar ─────────────────────────────── */}
+      {subjectsToday.length > 0 && (
+        <div
+          className="animate-fade-in-up"
+          style={{
+            marginTop: '1.25rem',
+            padding: '1rem 1.25rem',
+            background: isFutureDate ? '#F8FAFC' : 'white',
+            border: '3px solid var(--border)',
+            borderRadius: 16,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            flexWrap: 'wrap',
+            opacity: isFutureDate ? 0.6 : 1,
+          }}
+        >
+          <span style={{
+            fontFamily: 'var(--font-heading)',
+            fontWeight: 700,
+            fontSize: '0.82rem',
+            color: '#64748B',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+          }}>
+            Mark all {subjectsToday.length} classes:
+          </span>
+
+          {/* Attended All */}
+          <button
+            className={`btn-pill btn-green ${isFutureDate ? 'opacity-50 cursor-not-allowed' : ''}`}
+            style={{ fontSize: '0.82rem', padding: '0.4rem 1.1rem', flex: 1, minWidth: 110, justifyContent: 'center' }}
+            disabled={isFutureDate}
+            onClick={() => subjectsToday.forEach((item, i) => {
+              const subject = typeof item === 'object' ? item.subject : item;
+              markAttendance(dateStr, `${subject}__${i}`, 'attended');
+            })}
+          >
+            ✓ Attended All
+          </button>
+
+          {/* Missed All */}
+          <button
+            className={`btn-pill btn-red ${isFutureDate ? 'opacity-50 cursor-not-allowed' : ''}`}
+            style={{ fontSize: '0.82rem', padding: '0.4rem 1.1rem', flex: 1, minWidth: 110, justifyContent: 'center' }}
+            disabled={isFutureDate}
+            onClick={() => subjectsToday.forEach((item, i) => {
+              const subject = typeof item === 'object' ? item.subject : item;
+              markAttendance(dateStr, `${subject}__${i}`, 'missed');
+            })}
+          >
+            ✕ Missed All
+          </button>
+
+          {/* Holiday */}
+          <button
+            className={`btn-pill ${isFutureDate ? 'opacity-50 cursor-not-allowed' : ''}`}
+            style={{
+              fontSize: '0.82rem', padding: '0.4rem 1.1rem', flex: 1, minWidth: 110, justifyContent: 'center',
+              background: '#FFF7ED', color: '#C2410C', borderColor: '#F97316',
+            }}
+            disabled={isFutureDate}
+            onClick={() => subjectsToday.forEach((item, i) => {
+              const subject = typeof item === 'object' ? item.subject : item;
+              markAttendance(dateStr, `${subject}__${i}`, 'canceled');
+            })}
+          >
+            🏖️ Holiday
+          </button>
+        </div>
+      )}
+
+
+
       {/* Edit Timetable Modal */}
       {showEditModal && timetable && (
         <TimetableEditModal

@@ -1,7 +1,44 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAttendance } from '../../context/AttendanceContext';
 import { extractTimetableFromImage } from '../../utils/aiAgent';
 import TimetableEditModal from './TimetableEditModal';
+
+/* ── Shared AI processing toast (shown for both variants) ── */
+const AIProcessingToast = () => createPortal(
+  <div
+    style={{
+      position: 'fixed',
+      bottom: '1.5rem',
+      left: 0,
+      right: 0,
+      margin: '0 auto',
+      zIndex: 9998,
+      background: 'white',
+      border: '3px solid var(--border)',
+      borderRadius: 20,
+      boxShadow: '0 8px 32px rgba(15,23,42,0.18)',
+      padding: '1rem 1.5rem',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '1rem',
+      width: 'fit-content',
+      maxWidth: '90vw',
+      animation: 'fadeInUp 0.35s ease-out both',
+    }}
+  >
+    <div className="spinner-notebook" style={{ width: 32, height: 32, borderWidth: 4, flexShrink: 0 }} />
+    <div>
+      <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--blue)', fontSize: '1rem', margin: 0 }}>
+        🤖 AI is reading your timetable...
+      </p>
+      <p style={{ fontFamily: 'var(--font-body)', fontWeight: 600, color: '#64748B', fontSize: '0.8rem', margin: '0.2rem 0 0' }}>
+        This might take 1–2 minutes. Please don't close the tab.
+      </p>
+    </div>
+  </div>,
+  document.body
+);
 
 const TimetableUpload = ({ variant = 'full' }) => {
   const { updateTimetable, timetable } = useAttendance();
@@ -78,11 +115,14 @@ const TimetableUpload = ({ variant = 'full' }) => {
             {isProcessing ? (
               <span className="flex items-center gap-1.5">
                 <div className="spinner-notebook" style={{ width: 14, height: 14, borderWidth: 2.5 }}></div>
-                Reading...
+                Reading timetable...
               </span>
             ) : '📤 New Timetable'}
           </div>
         </div>
+
+        {/* AI toast visible to user while processing */}
+        {isProcessing && <AIProcessingToast />}
 
         {showEditModal && pendingTimetable && (
           <TimetableEditModal
@@ -125,7 +165,10 @@ const TimetableUpload = ({ variant = 'full' }) => {
           >
             <div className="spinner-notebook mb-4" style={{ width: 48, height: 48, borderWidth: 5 }}></div>
             <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--blue)', fontSize: '1.1rem' }} className="animate-pulse">
-              🤖 AI is extracting your timetable...
+              🤖 AI is reading your timetable...
+            </p>
+            <p style={{ fontFamily: 'var(--font-body)', fontWeight: 600, color: '#64748B', fontSize: '0.82rem', marginTop: '0.4rem' }}>
+              This might take 1–2 minutes. Please don't close the tab.
             </p>
           </div>
         )}
