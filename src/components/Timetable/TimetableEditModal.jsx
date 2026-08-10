@@ -114,7 +114,8 @@ function SubjectCard({ subject, index, total, onUpdate, onDelete, onMove }) {
 
   const handleDelete = () => {
     setDeleting(true);
-    setTimeout(() => onDelete(), 320);
+    // actual removal is triggered by onAnimationEnd on the card div
+    // so the timing is always perfectly synced to the animation
   };
 
   const parseTime = (t) => {
@@ -128,9 +129,12 @@ function SubjectCard({ subject, index, total, onUpdate, onDelete, onMove }) {
   return (
     <div
       className="subject-card"
+      onAnimationEnd={() => { if (deleting) onDelete(); }}
       style={{
         flexDirection: 'column', alignItems: 'stretch', gap: '0.4rem', padding: '0.85rem 1rem',
-        animation: deleting ? 'deleteSlide 0.32s ease-in forwards' : 'fadeInUp 0.3s ease-out both',
+        animation: deleting ? 'deleteSlide 0.19s cubic-bezier(0.4,0,1,1) forwards' : 'fadeInUp 0.3s ease-out both',
+        willChange: 'transform, opacity',
+        transform: 'translateZ(0)',          /* force GPU layer from mount */
         overflow: 'hidden',
       }}
     >
