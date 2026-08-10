@@ -119,6 +119,33 @@ export const AttendanceProvider = ({ children, session }) => {
     }
   };
 
+  // Edit existing timetable WITHOUT clearing attendance records.
+  // Attendance percentages recalculate automatically because calculateStats/calculateSubjectStats
+  // already filter records against the current timetable's subject list.
+  const editTimetable = async (editedTimetable) => {
+    if (!userId) return;
+
+    setTimetable(editedTimetable);
+
+    const { data: existing } = await supabase.from('timetables').select('start_date').eq('user_id', userId).single();
+    const currentStartDate = existing?.start_date || startDate;
+
+    const { error } = await supabase
+      .from('timetables')
+      .upsert([
+        {
+          user_id: userId,
+          schedule: editedTimetable,
+          start_date: currentStartDate
+        }
+      ], { onConflict: 'user_id' });
+
+    if (error) {
+      console.error("Error saving edited timetable to Supabase:", error);
+      throw new Error(`Failed to save to database: ${error.message || 'Check your Supabase logs.'}`);
+    }
+  };
+
   const updateStartDate = async (newStartDate) => {
     if (!userId) return;
     setStartDate(newStartDate);
@@ -168,6 +195,7 @@ export const AttendanceProvider = ({ children, session }) => {
     <AttendanceContext.Provider value={{
       timetable,
       updateTimetable,
+      editTimetable,
       startDate,
       updateStartDate,
       records,

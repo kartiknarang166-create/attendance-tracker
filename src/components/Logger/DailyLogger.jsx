@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAttendance } from '../../context/AttendanceContext';
 import TimetableUpload from '../Timetable/TimetableUpload';
+import TimetableEditModal from '../Timetable/TimetableEditModal';
 
 const getDayName = (date) => {
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -25,9 +26,11 @@ const getValidWeekday = (date, direction = 0) => {
 };
 
 const DailyLogger = () => {
-  const { timetable, records, markAttendance, isLoadingTimetable, startDate, updateStartDate } = useAttendance();
+  const { timetable, records, markAttendance, isLoadingTimetable, startDate, updateStartDate, editTimetable } = useAttendance();
   
   const [currentDate, setCurrentDate] = useState(() => getValidWeekday(new Date()));
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   if (isLoadingTimetable) {
     return (
@@ -156,6 +159,16 @@ const DailyLogger = () => {
           </div>
 
           <TimetableUpload variant="minimal" />
+
+          {/* Edit Timetable Button */}
+          <button
+            className="btn-pill btn-yellow"
+            style={{ fontSize: '0.75rem', padding: '0.35rem 0.85rem' }}
+            onClick={() => setShowEditModal(true)}
+            title="Edit your timetable subjects"
+          >
+            ✏️ Edit Timetable
+          </button>
       </div>
       
       {/* Horizontal Week Day Selector */}
@@ -278,6 +291,26 @@ const DailyLogger = () => {
           })
         )}
       </div>
+
+      {/* Edit Timetable Modal */}
+      {showEditModal && timetable && (
+        <TimetableEditModal
+          parsedTimetable={timetable}
+          isSaving={isSavingEdit}
+          onSave={async (edited) => {
+            setIsSavingEdit(true);
+            try {
+              await editTimetable(edited);
+              setShowEditModal(false);
+            } catch (err) {
+              console.error('Failed to save timetable edits:', err);
+            } finally {
+              setIsSavingEdit(false);
+            }
+          }}
+          onCancel={() => setShowEditModal(false)}
+        />
+      )}
     </div>
   );
 };
